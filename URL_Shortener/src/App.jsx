@@ -16,7 +16,7 @@ const Box = styled.div`
   padding: 60px;
   border-radius: 16px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-  text-align: center; 
+  text-align: center;
   width: 500px;
   max-width: 50%;
   animation: fadeIn 0.5s ease;
@@ -76,21 +76,20 @@ export default function App() {
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [copied, setCopied] = useState(false);
-  const [click, setClick] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const copyToClipboard = async () => {
-    setClick(true);
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(shortUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy: ', err);
+      console.error("Failed to copy: ", err);
     }
-    setTimeout(() => setClick(false), 1000);
   };
 
   const shortenUrl = async () => {
+    setLoading(true);
     try {
       const response = await fetch("https://api.ogli.sh/link", {
         method: "POST",
@@ -112,6 +111,8 @@ export default function App() {
       }
     } catch (error) {
       console.error("Error shortening URL:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -126,14 +127,26 @@ export default function App() {
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
-          <Button onClick={shortenUrl} style={{borderRadius: '0 8px 8px 0'}}>Shorten</Button>
+          <Button
+            onClick={shortenUrl}
+            disabled={loading}
+            style={{ borderRadius: "0 8px 8px 0" }}
+          >
+            {loading ? "Shortening..." : "Shorten"}
+          </Button>
         </div>
 
         {shortUrl && (
           <>
             <Output>{shortUrl}</Output>
-            <Button onClick={copyToClipboard} style={{ padding: "10px 30px" }}>
-              {click? "Copied" : "Copy"}
+            <Button
+              variant="copy"
+              round
+              disabled={copied}
+              onClick={copyToClipboard}
+              style={{ padding: "10px 30px" }}
+            >
+              {copied ? "Copied!" : "Copy"}
             </Button>
           </>
         )}
