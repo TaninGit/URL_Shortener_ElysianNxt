@@ -4,6 +4,7 @@ import styled from "@emotion/styled";
 
 const AppContainer = styled.div`
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
   height: 100vh;
@@ -18,7 +19,7 @@ const Box = styled.div`
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   text-align: center;
   width: 500px;
-  max-width: 50%;
+  max-width: 90%;
   animation: fadeIn 0.5s ease;
 
   @keyframes fadeIn {
@@ -37,30 +38,34 @@ const Input = styled.input`
   width: 75%;
   padding: 10px;
   font-size: 16px;
-  border: 1px solid #ccc;
+  border: 1px solid ${({ isError }) => (isError ? "red" : "#ccc")};
   border-radius: 8px 0 0 8px;
   outline: none;
   transition: border-color 0.2s ease;
 
   &:focus {
-    border-color: #007bff;
+    border-color: ${({ isError }) => (isError ? "red" : "#007bff")};
   }
 `;
 
 const Button = styled.button`
   padding: 10px 20px;
   font-size: 16px;
-  font-weight: semi-bold;
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 8px;
+  border-radius: 0 8px 8px 0;
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
     background-color: #0056b3;
     transform: scale(1.05);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `;
 
@@ -72,11 +77,26 @@ const Output = styled.p`
   animation: fadeIn 0.3s ease;
 `;
 
+const ErrorText = styled.p`
+  color: red;
+  font-size: 14px;
+  margin-top: 10px;
+  animation: fadeIn 0.2s ease;
+`;
+
+const FooterText = styled.p`
+  margin-top: 20px;
+  font-size: 16px;
+  color: white;
+  opacity: 0.8;
+`;
+
 export default function App() {
   const [url, setUrl] = useState("");
   const [shortUrl, setShortUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const copyToClipboard = async () => {
     try {
@@ -89,6 +109,12 @@ export default function App() {
   };
 
   const shortenUrl = async () => {
+    if (!url.trim()) {
+      setError("Oops! You forgot to enter a URL");
+      setShortUrl("");
+      return;
+    }
+    setError("");
     setLoading(true);
     try {
       const response = await fetch("https://api.ogli.sh/link", {
@@ -106,8 +132,6 @@ export default function App() {
       const data = await response.json();
       if (data.url) {
         setShortUrl(data.url);
-      } else {
-        alert("Error: " + JSON.stringify(data));
       }
     } catch (error) {
       console.error("Error shortening URL:", error);
@@ -125,32 +149,36 @@ export default function App() {
             type="text"
             placeholder="Enter your long URL"
             value={url}
+            isError={!!error}
             onChange={(e) => setUrl(e.target.value)}
           />
-          <Button
-            onClick={shortenUrl}
-            disabled={loading}
-            style={{ borderRadius: "0 8px 8px 0" }}
-          >
+          <Button onClick={shortenUrl} disabled={loading}>
             {loading ? "Shortening..." : "Shorten"}
           </Button>
         </div>
 
-        {shortUrl && (
+        {error && <ErrorText>{error}</ErrorText>}
+        {shortUrl && !error && (
           <>
             <Output>{shortUrl}</Output>
             <Button
-              variant="copy"
-              round
-              disabled={copied}
               onClick={copyToClipboard}
-              style={{ padding: "10px 30px" }}
+              disabled={copied}
+              style={{
+                padding: "10px 30px",
+                borderRadius: "8px",
+                backgroundColor: copied ? "#007bff" : "#007bff",
+              }}
             >
               {copied ? "Copied!" : "Copy"}
             </Button>
           </>
         )}
       </Box>
+
+      <FooterText>
+        Reference API by <a href="https://ogli.sh" target="_blank" rel="noreferrer" style={{ color: "white", textDecoration: "underline" }}>ogli.sh</a>
+      </FooterText>
     </AppContainer>
   );
 }
