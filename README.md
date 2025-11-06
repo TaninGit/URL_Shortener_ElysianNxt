@@ -23,7 +23,10 @@ Content-Type: application/json
   "targetUrl": "https://example.com/page",
   "useOriginalMeta": true
 }
+```
 
+### 🧾 Response
+```http
 {
   "url": "https://ogli.sh/8Uff9Cda",
   "qrCodeUrl": "https://ogli.sh/qr/8Uff9Cda",
@@ -32,4 +35,4 @@ Content-Type: application/json
   "alias": null,
   "existing": true
 }
-
+```
