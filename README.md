@@ -14,7 +14,6 @@ This project was created as part of the *Front-end Developer Bonus Points Challe
 
 ### 🧾 Request
 
-**Headers:**
 ```http
 Authorization: Bearer <YOUR_API_KEY>
 Content-Type: application/json
